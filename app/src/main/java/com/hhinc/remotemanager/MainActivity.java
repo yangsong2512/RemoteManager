@@ -16,4 +16,14 @@ public class MainActivity extends AppCompatActivity {
         service.setComponent(componentName);
         startService(service);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent service = new Intent();
+        ComponentName componentName = new ComponentName("com.hhinc.remotemanager",
+                "com.hhinc.remotemanager.RemoteManagerService");
+        service.setComponent(componentName);
+        stopService(service);
+    }
 }

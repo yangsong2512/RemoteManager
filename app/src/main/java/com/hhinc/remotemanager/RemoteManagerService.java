@@ -76,5 +76,6 @@ public class RemoteManagerService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mReceiver);
+        mThread.doQuit();
     }
 }
