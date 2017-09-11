@@ -3,24 +3,17 @@ package com.hhinc.remotemanager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Environment;
-import android.renderscript.ScriptGroup;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import org.apache.http.conn.ConnectTimeoutException;
-
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.sql.Array;
-import java.sql.Time;
-import java.util.concurrent.TimeoutException;
+
+import static com.hhinc.remotemanager.MyApplication.INFO_CLIENT_TYPE_MASTER;
 
 /**
  * Created by GKX100212 on 2017/9/9.
@@ -32,9 +25,9 @@ class DataHandlerThread extends Thread {
     private final Object mLock = new Object();
     private Context mContext;
     private boolean mQuit = false;
-    private File mRoot = null;
     private Socket mSocket;
     private SocketAddress mSocketAddress;
+    private int mClientType = 0;
     DataHandlerThread(Context context){
         mContext = context;
     }
@@ -82,8 +75,8 @@ class DataHandlerThread extends Thread {
                 byte[] buffer = new byte[512];
                 outputStream = mSocket.getOutputStream();
 
-                buffer[0] = 0;//client info
-                buffer[1] = 0;//0,client is a master,1,client is a slave
+                buffer[0] = INFO_CLIENT_TYPE_MASTER;//client info
+                mClientType = buffer[1] = 0;//0,client is a master,1,client is a slave
                 outputStream.write(buffer);
             }
         }catch (IOException e){
@@ -110,8 +103,9 @@ class DataHandlerThread extends Thread {
                 ret = inputStream.read(buffer);
                 if(ret == 0){
                     Log.d(TAG,"closed?");
+                    break;
                 }else{
-                    CommandParser.parseCommand(outputStream,buffer);
+                    CommandParser.getInstance().parseCommand(outputStream,buffer);
                 }
             }
 
@@ -124,7 +118,7 @@ class DataHandlerThread extends Thread {
 
     }
 
-    private void writeSometing(){
+    private void writeSomething(){
         if(mSocket.isConnected()){
             try{
                 OutputStream outputStream = mSocket.getOutputStream();
@@ -187,6 +181,5 @@ class DataHandlerThread extends Thread {
 
     void onWifiDisconnected(){
         Log.d(TAG,"WIFI disconnected");
-
     }
 }
